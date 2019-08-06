@@ -46,8 +46,25 @@ class MovieTableViewController: UITableViewController {
     return cell
   }
   
+  override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+    if editingStyle == .delete {
+      guard let movieTodelete = fetchRequestController?.object(at: indexPath) else {return}
+      let deleteAlertController = UIAlertController(title: "Remove Movie", message: "Would you like to delete \(String(describing: movieTodelete.title))", preferredStyle: .actionSheet)
+      let deleteAction = UIAlertAction(title: "Delete", style: .default) {[weak self] (action) in
+       self?.coreData.persistentContainer.viewContext.delete(movieTodelete)
+        self?.coreData.saveContext()
+      }
+      let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+      
+      deleteAlertController.addAction(deleteAction)
+      deleteAlertController.addAction(cancelAction)
+      present(deleteAlertController, animated: true, completion: nil)
+    }
+  }
+  
   private func loadData() {
     fetchRequestController = movieService?.getMovies()
+    fetchRequestController?.delegate = self
   }
   
   @IBAction func resetButtonAction(_ sender: UIBarButtonItem) {
@@ -72,6 +89,8 @@ extension MovieTableViewController: NSFetchedResultsControllerDelegate {
     switch type {
     case .update:
       tableView.reloadRows(at: [indexPath], with: .fade)
+    case .delete:
+     tableView.deleteRows(at: [indexPath], with: .fade)
     default:
       break
     }
