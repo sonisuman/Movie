@@ -16,18 +16,18 @@ class MovieService {
     self.moc = managedObjectContext
   }
   
- func getMovies() -> NSFetchedResultsController<Movie> {
-  let fetchedContrller: NSFetchedResultsController<Movie>
-  let request: NSFetchRequest<Movie> = Movie.fetchRequest()
-  let sortDescripter = NSSortDescriptor(key: "title", ascending: true)
-  request.sortDescriptors = [sortDescripter]
-  fetchedContrller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: moc!, sectionNameKeyPath: nil, cacheName: nil)
-  do {
-    try fetchedContrller.performFetch()
-  } catch {
-    fatalError("error on fetch data")
-  }
-  return fetchedContrller
+  func getMovies() -> NSFetchedResultsController<Movie> {
+    let fetchedContrller: NSFetchedResultsController<Movie>
+    let request: NSFetchRequest<Movie> = Movie.fetchRequest()
+    let sortDescripter = NSSortDescriptor(key: "title", ascending: true)
+    request.sortDescriptors = [sortDescripter]
+    fetchedContrller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: moc!, sectionNameKeyPath: nil, cacheName: nil)
+    do {
+      try fetchedContrller.performFetch()
+    } catch {
+      fatalError("error on fetch data")
+    }
+    return fetchedContrller
   }
   func updateMovieRating(for movie: Movie, with newRating: Int) {
     movie.userRating = Int16(newRating)
@@ -35,6 +35,31 @@ class MovieService {
       try moc?.save()
     } catch {
       print("error is=== \(error.localizedDescription)")
+    }
+  }
+  
+  func resetAllRating(completion: (Bool) -> Void ) {
+    let batchUpdate =  NSBatchUpdateRequest(entityName: "Movie")
+    batchUpdate.propertiesToUpdate = ["userRating" : 0]
+    batchUpdate.resultType = .updatedObjectIDsResultType
+    
+    do {
+      if let resultValue = try moc!.execute(batchUpdate) as? NSBatchUpdateRequest {
+        if let resultIds =   resultValue.resultType as? [NSManagedObjectID] {
+          for object in resultIds {
+            let managedObject = moc?.object(with: object)
+            if !managedObject!.isFault {
+              moc?.stalenessInterval = 0
+              moc?.refresh(managedObject!, mergeChanges: true)
+            }
+          }
+          completion(true)
+        }
+      }
+      
+    } catch {
+      completion(false)
+      print("error=== \(error.localizedDescription)")
     }
   }
 }

@@ -78,7 +78,13 @@
                             <outlet property="delegate" destination="Ab7-y4-Ogr" id="wUQ-LH-ih0"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="My Movies" id="SMJ-OY-1vz"/>
+                    <navigationItem key="navigationItem" title="My Movies" id="SMJ-OY-1vz">
+                        <barButtonItem key="rightBarButtonItem" title="Reset Ratings" id="uqF-xX-wjt">
+                            <connections>
+                                <action selector="resetButtonAction:" destination="Ab7-y4-Ogr" id="IQ1-DM-gB7"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="eU9-Nj-61G" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

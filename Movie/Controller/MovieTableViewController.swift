@@ -14,40 +14,50 @@ class MovieTableViewController: UITableViewController {
   private var fetchRequestController : NSFetchedResultsController<Movie>?
   var movieService: MovieService?
   
-    override func viewDidLoad() {
-      super.viewDidLoad()
-      movieService = MovieService(managedObjectContext: coreData.persistentContainer.viewContext)
-      loadData()
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    movieService = MovieService(managedObjectContext: coreData.persistentContainer.viewContext)
+    loadData()
+  }
+  
+  // MARK: - Table view data source
+  
+  override func numberOfSections(in tableView: UITableView) -> Int {
+    if let sections = fetchRequestController?.sections {
+      return sections.count
     }
-
-    // MARK: - Table view data source
-
-    override func numberOfSections(in tableView: UITableView) -> Int {
-      if let sections = fetchRequestController?.sections {
-        return sections.count
+    return 0
+  }
+  
+  override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    if let sections = fetchRequestController?.sections {
+      return sections[section].numberOfObjects
+    }
+    return 0
+  }
+  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as! MovieTableViewCell
+    if let movie = fetchRequestController?.object(at: indexPath) {
+      cell.configureCell(movie: movie)
+      cell.userRatingHandlers = {[weak self] (newRating) in
+        self?.movieService?.updateMovieRating(for: movie, with: newRating)
       }
-        return 0
     }
-
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-      if let sections = fetchRequestController?.sections {
-        return sections[section].numberOfObjects
-      }
-        return 0
-    }
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "movieCell", for: indexPath) as! MovieTableViewCell
-      if let movie = fetchRequestController?.object(at: indexPath) {
-         cell.configureCell(movie: movie)
-        cell.userRatingHandlers = {[weak self] (newRating) in
-         self?.movieService?.updateMovieRating(for: movie, with: newRating)
-        }
-      }
-        return cell
-    }
-
+    return cell
+  }
+  
   private func loadData() {
     fetchRequestController = movieService?.getMovies()
+  }
+  
+  @IBAction func resetButtonAction(_ sender: UIBarButtonItem) {
+    movieService?.resetAllRating(completion: { [weak self](success) in
+      if success {
+        DispatchQueue.main.async {
+          self?.tableView.reloadData()
+        }
+      }
+    })
   }
 }
 
