@@ -42,24 +42,22 @@ class MovieService {
     let batchUpdate =  NSBatchUpdateRequest(entityName: "Movie")
     batchUpdate.propertiesToUpdate = ["userRating" : 0]
     batchUpdate.resultType = .updatedObjectIDsResultType
-    
     do {
-      if let resultValue = try moc!.execute(batchUpdate) as? NSBatchUpdateRequest {
-        if let resultIds =   resultValue.resultType as? [NSManagedObjectID] {
-          for object in resultIds {
-            let managedObject = moc?.object(with: object)
-            if !managedObject!.isFault {
-              moc?.stalenessInterval = 0
-              moc?.refresh(managedObject!, mergeChanges: true)
-            }
-          }
-          completion(true)
+      let result = try moc?.execute(batchUpdate) as? NSBatchUpdateResult
+      guard let objectIDArray = result?.result as? [NSManagedObjectID] else { return}
+      for object in objectIDArray {
+        let managedObject = moc?.object(with: object)
+        if !managedObject!.isFault {
+          moc?.stalenessInterval = 0
+          moc?.refresh(managedObject!, mergeChanges: true)
         }
-      }
-      
-    } catch {
+    }
+      completion(true)
+    }
+  catch {
       completion(false)
-      print("error=== \(error.localizedDescription)")
+      fatalError("Failed to perform batch update: \(error)")
+  
     }
   }
 }

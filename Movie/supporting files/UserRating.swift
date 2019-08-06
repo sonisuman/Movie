@@ -68,7 +68,7 @@ class UserRating: UIView {
   }
   
   @objc private func updateRatingButton(button: UIButton) {
-    guard let buttonIndex = ratingButtons.index(of: button) else {
+    guard let buttonIndex = ratingButtons.firstIndex(of: button) else {
       return
     }
     rating = buttonIndex + 1

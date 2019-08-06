@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   private func uploadSampleData() {
     let moc = coreData.persistentContainer.viewContext
-    guard let url = Bundle.main.url(forResource: "movies", withExtension: "json"), let data = try? Data(contentsOf: url), let jsonRequest = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary, let jsonArray = jsonRequest?.value(forKey: "movie")as? NSArray else {
+    guard let url = Bundle.main.url(forResource: "movies", withExtension: "json"), let data = try? Data(contentsOf: url), let jsonRequest = ((try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? NSDictionary) as NSDictionary??), let jsonArray = jsonRequest?.value(forKey: "movie")as? NSArray else {
       return
     }
     
@@ -46,8 +46,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       movie.userRating = rating.int16Value
       if let imageName = movieObj["image"] as? String {
         let image = UIImage(named: imageName)
-        let imageCompressionData = image?.jpegData(compressionQuality: 1.0)
-        movie.image = NSData.init(data: imageCompressionData!)
+        if let imageCompressionData = image?.jpegData(compressionQuality: 1.0) {
+           movie.image = NSData.init(data: imageCompressionData)
+        }
       }
       coreData.saveContext()
     }
