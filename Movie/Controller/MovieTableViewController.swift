@@ -61,6 +61,16 @@ class MovieTableViewController: UITableViewController {
       present(deleteAlertController, animated: true, completion: nil)
     }
   }
+  override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    if let sections = fetchRequestController?.sections {
+      let currentSection = sections[section]
+      return currentSection.name
+    }
+    else {
+      return ""
+    }
+   
+  }
   
   private func loadData() {
     fetchRequestController = movieService?.getMovies()

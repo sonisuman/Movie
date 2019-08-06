@@ -19,9 +19,10 @@ class MovieService {
   func getMovies() -> NSFetchedResultsController<Movie> {
     let fetchedContrller: NSFetchedResultsController<Movie>
     let request: NSFetchRequest<Movie> = Movie.fetchRequest()
-    let sortDescripter = NSSortDescriptor(key: "title", ascending: true)
-    request.sortDescriptors = [sortDescripter]
-    fetchedContrller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: moc!, sectionNameKeyPath: nil, cacheName: nil)
+    let formatSortDescripter = NSSortDescriptor(key: "format", ascending: true)
+    let nameSortDescripter = NSSortDescriptor(key: "title", ascending: true)
+    request.sortDescriptors = [formatSortDescripter,nameSortDescripter]
+    fetchedContrller = NSFetchedResultsController(fetchRequest: request, managedObjectContext: moc!, sectionNameKeyPath: "format", cacheName: "cacheLibrary")
     do {
       try fetchedContrller.performFetch()
     } catch {
